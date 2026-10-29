@@ -30,16 +30,46 @@ app.get('/students/:id', (req,res)=> {
 
 });
 
+
 app.post('/students', (req, res) => {
+    const { name, marks } = req.body;
+
+    // Validate input
+    if (!name || marks === undefined) {
+        return res.status(400).json({
+            error: 'Name and marks are required'
+        });
+    }
+
+    if (typeof name !== 'string' || name.trim() === '') {
+        return res.status(400).json({
+            error: 'Name must be a non-empty string'
+        });
+    }
+
+    if (typeof marks !== 'number' || marks < 0 || marks > 100) {
+        return res.status(400).json({
+            error: 'Marks must be a number between 0 and 100'
+        });
+    }
+
+    // Generate a unique ID
     const newStudent = {
-        id : students.length + 1,
-        name : req.body.name,
-        marks : req.body.marks
+        id: students.length
+            ? Math.max(...students.map(s => s.id)) + 1
+            : 1,
+        name: name.trim(),
+        marks
     };
 
     students.push(newStudent);
-    res.status(201).json(newStudent);
+
+    res.status(201).json({
+        message: 'Student added successfully',
+        student: newStudent
+    });
 });
+
 
 app.put('/students/:id', (req,res)=> {
     const id = parseInt(req.params.id);
